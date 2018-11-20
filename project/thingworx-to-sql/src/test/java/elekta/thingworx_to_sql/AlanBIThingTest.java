@@ -1,29 +1,27 @@
 package elekta.thingworx_to_sql;
 
+import static org.junit.Assert.*;
+
+import org.apache.log4j.BasicConfigurator;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.thingworx.communications.client.ClientConfigurator;
-import com.thingworx.communications.client.ConnectedThingClient;
 import com.thingworx.communications.client.things.VirtualThing;
 import com.thingworx.communications.client.things.VirtualThingPropertyChangeEvent;
 import com.thingworx.communications.client.things.VirtualThingPropertyChangeListener;
 import com.thingworx.communications.common.SecurityClaims;
 
-// Refer to the "Steam Sensor Example" section of the documentation
-// for a detailed explanation of this example's operation
-public class AlanBIThingClient extends ConnectedThingClient {
-    public AlanBIThingClient(ClientConfigurator config) throws Exception {
-        super(config);
-    }
+public class AlanBIThingTest {
 
-    // Test example
-    public static void main(String[] args) throws Exception {
-//        if (args.length < 3) {
-//            System.out.println("Required arguments not found!");
-//            System.out.println("URI AppKey ScanRate <StartSensor> <Number Of Sensors>");
-//            System.out.println("Example:");
-//            System.out.println("ws://localhost:80/Thingworx/WS xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx 1000 1 10");
-//            return;
-//        }
-        
+	@Before
+	public void setup() {
+		BasicConfigurator.configure();
+	}
+
+	@Test
+	public void updateStatus() throws Exception {
+		
         // Set the required configuration information
         ClientConfigurator config = new ClientConfigurator();
         // The uri for connecting to Thingworx
@@ -48,30 +46,16 @@ public class AlanBIThingClient extends ConnectedThingClient {
         // Get the scan rate (milliseconds) that is specific to this example
         // The example will execute the processScanRequest of the VirtualThing
         // based on this scan rate
-        int scanRate = 15000;
+        int scanRate = 2000;
 
         int startSensor = 0;
         int nSensors = 2;
 
-
         // Create the client passing in the configuration from above
         AlanBIThingClient client = new AlanBIThingClient(config);
 
-        for (int sensor = 0; sensor < nSensors; sensor++) {
-            int sensorID = startSensor + sensor;
-            final AlanBIThing steamSensorThing = new AlanBIThing("AlanBIThing01", "Description", "AlanBIThing01", client);
-            client.bindThing(steamSensorThing);
-
-            steamSensorThing.addPropertyChangeListener(new VirtualThingPropertyChangeListener() {
-                @Override
-                public void propertyChangeEventReceived(VirtualThingPropertyChangeEvent evt) {
-                    if ("TemperatureLimit".equals(evt.getPropertyDefinition().getName())) {
-                        System.out.println(String.format("Temperature limit on %s has been changed to %s°.", steamSensorThing.getName(),
-                            evt.getPrimitiveValue().getValue()));
-                    }
-                }
-            });
-        }
+        final AlanBIThing steamSensorThing = new AlanBIThing("AlanBIThing01", "Description", "AlanBIThing01", client);
+        client.bindThing(steamSensorThing);
 
         try {
             // Start the client
@@ -79,7 +63,7 @@ public class AlanBIThingClient extends ConnectedThingClient {
         } catch (Exception eStart) {
             System.out.println("Initial Start Failed : " + eStart.getMessage());
         }
-
+        
         // As long as the client has not been shutdown, continue
         while (!client.isShutdown()) {
             // Only process the Virtual Things if the client is connected
@@ -87,7 +71,7 @@ public class AlanBIThingClient extends ConnectedThingClient {
                 // Loop over all the Virtual Things and process them
                 for (VirtualThing thing : client.getThings().values()) {
                     try {
-                        thing.processScanRequest();
+                        steamSensorThing.updateStatus2("Hello World!");
                     } catch (Exception eProcessing) {
                         System.out.println("Error Processing Scan Request for [" + thing.getName() + "] : " + eProcessing.getMessage());
                     }
@@ -96,5 +80,5 @@ public class AlanBIThingClient extends ConnectedThingClient {
             // Suspend processing at the scan rate interval
             Thread.sleep(scanRate);
         }
-    }
+   }
 }

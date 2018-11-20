@@ -1,5 +1,6 @@
 package elekta.thingworx_to_sql;
 
+import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 
 import com.thingworx.communications.client.ConnectedThingClient;
@@ -25,6 +26,8 @@ import com.thingworx.types.primitives.StringPrimitive;
 // Property Definitions
 @SuppressWarnings("serial")
 @ThingworxPropertyDefinitions(properties = {
+        @ThingworxPropertyDefinition(name = "Status", description = "Current Status",
+                baseType = "STRING", category = "Status", aspects = { "isReadOnly:true" }),
         @ThingworxPropertyDefinition(name = "Temperature", description = "Current Temperature",
                 baseType = "NUMBER", category = "Status", aspects = { "isReadOnly:true" }),
         @ThingworxPropertyDefinition(name = "Pressure", description = "Current Pressure",
@@ -47,6 +50,9 @@ import com.thingworx.types.primitives.StringPrimitive;
 // Steam Thing virtual thing class that simulates a Steam Sensor
 public class AlanBIThing extends VirtualThing implements Runnable {
 
+	private static final String TEMPERATURE_PROPERTY = "Temperature";
+	private static final String STATUS_PROPERTY = "Status";
+
     private double _totalFlow = 0.0;
     private Thread _shutdownThread = null;
     private int counter = 0;
@@ -60,7 +66,8 @@ public class AlanBIThing extends VirtualThing implements Runnable {
     private final static String TEMPERATURE_LIMIT_FIELD = "RatedTemperatureLimit";
     private final static String TOTAL_FLOW_FIELD = "TotalFlowAmount";
 
-
+    Logger log = Logger.getLogger(AlanBIThing.class);
+    
     public AlanBIThing(String name, String description, String identifier,
             ConnectedThingClient client) throws Exception {
         super(name, description, identifier, client);
@@ -102,84 +109,6 @@ public class AlanBIThing extends VirtualThing implements Runnable {
         defineDataShapeDefinition("SteamSensorReadings", fields);
     }
 
-    @ThingworxServiceDefinition(name = "GetSteamSensorReadings",
-            description = "Get SteamSensor Readings")
-    @ThingworxServiceResult(name = CommonPropertyNames.PROP_RESULT, description = "Result",
-            baseType = "INFOTABLE", aspects = { "dataShape:SteamSensorReadings" })
-    public InfoTable GetSteamSensorReadings() {
-        InfoTable table = new InfoTable(getDataShapeDefinition("SteamSensorReadings"));
-
-        ValueCollection entry = new ValueCollection();
-
-        DateTime now = DateTime.now();
-
-        try {
-            // entry 1
-            entry.clear();
-            entry.SetStringValue(SENSOR_NAME_FIELD, "Sensor Alpha");
-            entry.SetDateTimeValue(ACTIV_TIME_FIELD, now.plusDays(1));
-            entry.SetNumberValue(TEMPERATURE_FIELD, 50);
-            entry.SetNumberValue(PRESSURE_FIELD, 15);
-            entry.SetBooleanValue(FAULT_STATUS_FIELD, false);
-            entry.SetBooleanValue(INLET_VALVE_FIELD, true);
-            entry.SetNumberValue(TEMPERATURE_LIMIT_FIELD, 150);
-            entry.SetNumberValue(TOTAL_FLOW_FIELD, 87);
-            table.addRow(entry.clone());
-
-            // entry 2
-            entry.clear();
-            entry.SetStringValue(SENSOR_NAME_FIELD, "Sensor Beta");
-            entry.SetDateTimeValue(ACTIV_TIME_FIELD, now.plusDays(2));
-            entry.SetNumberValue(TEMPERATURE_FIELD, 60);
-            entry.SetNumberValue(PRESSURE_FIELD, 25);
-            entry.SetBooleanValue(FAULT_STATUS_FIELD, true);
-            entry.SetBooleanValue(INLET_VALVE_FIELD, true);
-            entry.SetNumberValue(TEMPERATURE_LIMIT_FIELD, 150);
-            entry.SetNumberValue(TOTAL_FLOW_FIELD, 77);
-            table.addRow(entry.clone());
-
-            // entry 3
-            entry.clear();
-            entry.SetStringValue(SENSOR_NAME_FIELD, "Sensor Gamma");
-            entry.SetDateTimeValue(ACTIV_TIME_FIELD, now.plusDays(3));
-            entry.SetNumberValue(TEMPERATURE_FIELD, 70);
-            entry.SetNumberValue(PRESSURE_FIELD, 30);
-            entry.SetBooleanValue(FAULT_STATUS_FIELD, true);
-            entry.SetBooleanValue(INLET_VALVE_FIELD, true);
-            entry.SetNumberValue(TEMPERATURE_LIMIT_FIELD, 150);
-            entry.SetNumberValue(TOTAL_FLOW_FIELD, 67);
-            table.addRow(entry.clone());
-
-            // entry 4
-            entry.clear();
-            entry.SetStringValue(SENSOR_NAME_FIELD, "Sensor Delta");
-            entry.SetDateTimeValue(ACTIV_TIME_FIELD, now.plusDays(4));
-            entry.SetNumberValue(TEMPERATURE_FIELD, 80);
-            entry.SetNumberValue(PRESSURE_FIELD, 35);
-            entry.SetBooleanValue(FAULT_STATUS_FIELD, false);
-            entry.SetBooleanValue(INLET_VALVE_FIELD, true);
-            entry.SetNumberValue(TEMPERATURE_LIMIT_FIELD, 150);
-            entry.SetNumberValue(TOTAL_FLOW_FIELD, 57);
-            table.addRow(entry.clone());
-
-            // entry 5
-            entry.clear();
-            entry.SetStringValue(SENSOR_NAME_FIELD, "Sensor Epsilon");
-            entry.SetDateTimeValue(ACTIV_TIME_FIELD, now.plusDays(5));
-            entry.SetNumberValue(TEMPERATURE_FIELD, 90);
-            entry.SetNumberValue(PRESSURE_FIELD, 40);
-            entry.SetBooleanValue(FAULT_STATUS_FIELD, true);
-            entry.SetBooleanValue(INLET_VALVE_FIELD, false);
-            entry.SetNumberValue(TEMPERATURE_LIMIT_FIELD, 150);
-            entry.SetNumberValue(TOTAL_FLOW_FIELD, 47);
-            table.addRow(entry.clone());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return table;
-    }
-
     // The processScanRequest is called by the SteamSensorClient every scan cycle
     @Override
     public void processScanRequest() throws Exception {
@@ -188,15 +117,194 @@ public class AlanBIThing extends VirtualThing implements Runnable {
         // Execute the code for this simulation every scan
         this.scanDevice();
     }
-
+    
+    public void updateStatus(String status) throws Exception {
+    	
+    	super.processScanRequest();
+    	this.updateStatusProperty(status);
+    }
+    
     // Performs the logic for the steam sensor, occurs every scan cycle
-    public void scanDevice() throws Exception {
+    public void updateStatus2(String status) throws Exception {
+    	
+    	super.setProperty(STATUS_PROPERTY, status);
         ++counter;
 
         if ((counter % 1) == 0) {
             // Set the Temperature property value in the range of 400-440
             double temperature = 400 + 40 * Math.random();
-            super.setProperty("Temperature", temperature);
+            super.setProperty(TEMPERATURE_PROPERTY, temperature);
+
+            // Get the TemperatureLimmit property value from memory
+            double temperatureLimit =
+                    (Double) getProperty("TemperatureLimit").getValue().getValue();
+
+            // Set the FaultStatus property value if the TemperatureLimit value is exceeded
+            // and it is greater than zero
+            boolean faultStatus = false;
+
+            if (temperatureLimit > 0 && temperature > temperatureLimit)
+                faultStatus = true;
+
+            // If the sensor has a fault...
+            if (faultStatus) {
+                // Get the previous value of the fault from the property
+                // This is the current value because it hasn't been set yet
+                // This is done because we don't want to send the event every time it enters the
+                // fault state,
+                // only send the fault on the transition from non-faulted to faulted
+                boolean previousFaultStatus =
+                        (Boolean) getProperty("FaultStatus").getValue().getValue();
+
+                // If the current value is not faulted, then create and queue the event
+                if (!previousFaultStatus) {
+                    // Set the event information of the defined data shape for the event
+                    ValueCollection eventInfo = new ValueCollection();
+                    eventInfo.put(CommonPropertyNames.PROP_MESSAGE,
+                            new StringPrimitive("Temperature at " + temperature
+                                    + " was above limit of " + temperatureLimit));
+                    // Queue the event
+                    super.queueEvent("SteamSensorFault", DateTime.now(), eventInfo);
+                }
+            }
+
+            // Set the fault status property value
+            super.setProperty("FaultStatus", faultStatus);
+
+
+        }
+
+        if ((counter % 2) == 0) {
+            // Set the Pressure property value in the range of 18-23
+            double pressure = 18 + 5 * Math.random();
+            // Set the property values
+            super.setProperty("Pressure", pressure);
+        }
+
+        if ((counter % 3) == 0) {
+            // Add a random double value from 0.0-1.0 to the total flow
+            this._totalFlow += Math.random();
+
+            // Set the InletValve property value to true by default
+            boolean inletValveStatus = true;
+
+            // If the current second value is divisible by 15, set the InletValve property value to
+            // false
+            int seconds = DateTime.now().getSecondOfMinute();
+            if ((seconds % 15) == 0)
+                inletValveStatus = false;
+
+
+            super.setProperty("TotalFlow", _totalFlow);
+            super.setProperty("InletValve", inletValveStatus);
+
+            counter = 0;
+        }
+
+        // Update the subscribed properties and events to send any updates to Thingworx
+        // Without calling these methods, the property and event updates will not be sent
+        // The numbers are timeouts in milliseconds.
+        super.updateSubscribedProperties(15000);
+        super.updateSubscribedEvents(60000);
+    }
+    
+    
+  public void updateStatusProperty(String status) throws Exception {
+    	
+    	super.setProperty(STATUS_PROPERTY, status);
+        ++counter;
+
+        if ((counter % 1) == 0) {
+            // Set the Temperature property value in the range of 400-440
+            double temperature = 400 + 40 * Math.random();
+            super.setProperty(TEMPERATURE_PROPERTY, temperature);
+
+            // Get the TemperatureLimmit property value from memory
+            double temperatureLimit =
+                    (Double) getProperty("TemperatureLimit").getValue().getValue();
+
+            // Set the FaultStatus property value if the TemperatureLimit value is exceeded
+            // and it is greater than zero
+            boolean faultStatus = false;
+
+            if (temperatureLimit > 0 && temperature > temperatureLimit)
+                faultStatus = true;
+
+            // If the sensor has a fault...
+            if (faultStatus) {
+                // Get the previous value of the fault from the property
+                // This is the current value because it hasn't been set yet
+                // This is done because we don't want to send the event every time it enters the
+                // fault state,
+                // only send the fault on the transition from non-faulted to faulted
+                boolean previousFaultStatus =
+                        (Boolean) getProperty("FaultStatus").getValue().getValue();
+
+                // If the current value is not faulted, then create and queue the event
+                if (!previousFaultStatus) {
+                    // Set the event information of the defined data shape for the event
+                    ValueCollection eventInfo = new ValueCollection();
+                    eventInfo.put(CommonPropertyNames.PROP_MESSAGE,
+                            new StringPrimitive("Temperature at " + temperature
+                                    + " was above limit of " + temperatureLimit));
+                    // Queue the event
+                    super.queueEvent("SteamSensorFault", DateTime.now(), eventInfo);
+                }
+            }
+
+            // Set the fault status property value
+            super.setProperty("FaultStatus", faultStatus);
+
+
+        }
+
+        if ((counter % 2) == 0) {
+            // Set the Pressure property value in the range of 18-23
+            double pressure = 18 + 5 * Math.random();
+            // Set the property values
+            super.setProperty("Pressure", pressure);
+        }
+
+        if ((counter % 3) == 0) {
+            // Add a random double value from 0.0-1.0 to the total flow
+            this._totalFlow += Math.random();
+
+            // Set the InletValve property value to true by default
+            boolean inletValveStatus = true;
+
+            // If the current second value is divisible by 15, set the InletValve property value to
+            // false
+            int seconds = DateTime.now().getSecondOfMinute();
+            if ((seconds % 15) == 0)
+                inletValveStatus = false;
+
+
+            super.setProperty("TotalFlow", _totalFlow);
+            super.setProperty("InletValve", inletValveStatus);
+
+            counter = 0;
+        }
+
+        // Update the subscribed properties and events to send any updates to Thingworx
+        // Without calling these methods, the property and event updates will not be sent
+        // The numbers are timeouts in milliseconds.
+        super.updateSubscribedProperties(15000);
+        super.updateSubscribedEvents(60000);
+    }
+  
+  
+  
+
+    // Performs the logic for the steam sensor, occurs every scan cycle
+    public void scanDevice() throws Exception {
+    	
+    	super.setProperty(STATUS_PROPERTY, "Status from scanDevice! " + System.currentTimeMillis());
+        ++counter;
+
+        if ((counter % 1) == 0) {
+            // Set the Temperature property value in the range of 400-440
+            double temperature = 400 + 40 * Math.random();
+            super.setProperty(TEMPERATURE_PROPERTY, temperature);
 
             // Get the TemperatureLimmit property value from memory
             double temperatureLimit =

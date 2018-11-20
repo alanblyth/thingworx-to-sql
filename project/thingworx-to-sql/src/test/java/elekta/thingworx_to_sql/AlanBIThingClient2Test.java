@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import com.thingworx.communications.client.ClientConfigurator;
 
-public class AlanBIThingClientTest {
+public class AlanBIThingClient2Test {
 	
 	@Before
 	public void setup() {
@@ -18,10 +18,8 @@ public class AlanBIThingClientTest {
 	@Test
 	public void test() throws Exception {
 		ClientConfigurator config = new ClientConfigurator();
-		AlanBIThingClient client = new AlanBIThingClient(config);
+		AlanBIThingClient2 client = new AlanBIThingClient2(config);
 		
-		String[] args = null;
-		client.main(args);
-		//Thread.sleep(90000);
+		client.updateStatus("New Status!"); //Now modify this to ONLY update status
 	}
 }

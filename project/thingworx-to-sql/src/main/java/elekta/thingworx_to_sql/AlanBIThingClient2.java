@@ -9,13 +9,13 @@ import com.thingworx.communications.common.SecurityClaims;
 
 // Refer to the "Steam Sensor Example" section of the documentation
 // for a detailed explanation of this example's operation
-public class AlanBIThingClient extends ConnectedThingClient {
-    public AlanBIThingClient(ClientConfigurator config) throws Exception {
+public class AlanBIThingClient2 extends ConnectedThingClient {
+    public AlanBIThingClient2(ClientConfigurator config) throws Exception {
         super(config);
     }
 
     // Test example
-    public static void main(String[] args) throws Exception {
+    public static void updateStatus(String status) throws Exception {
 //        if (args.length < 3) {
 //            System.out.println("Required arguments not found!");
 //            System.out.println("URI AppKey ScanRate <StartSensor> <Number Of Sensors>");
@@ -55,18 +55,19 @@ public class AlanBIThingClient extends ConnectedThingClient {
 
 
         // Create the client passing in the configuration from above
-        AlanBIThingClient client = new AlanBIThingClient(config);
-
+        AlanBIThingClient2 client = new AlanBIThingClient2(config);
+        AlanBIThing steamSensorThing = null;
+        
         for (int sensor = 0; sensor < nSensors; sensor++) {
             int sensorID = startSensor + sensor;
-            final AlanBIThing steamSensorThing = new AlanBIThing("AlanBIThing01", "Description", "AlanBIThing01", client);
+            steamSensorThing = new AlanBIThing("AlanBIThing01", "Description", "AlanBIThing01", client);
             client.bindThing(steamSensorThing);
 
             steamSensorThing.addPropertyChangeListener(new VirtualThingPropertyChangeListener() {
                 @Override
                 public void propertyChangeEventReceived(VirtualThingPropertyChangeEvent evt) {
                     if ("TemperatureLimit".equals(evt.getPropertyDefinition().getName())) {
-                        System.out.println(String.format("Temperature limit on %s has been changed to %s°.", steamSensorThing.getName(),
+                        System.out.println(String.format("Temperature limit on %s has been changed to %s°.", "Name",
                             evt.getPrimitiveValue().getValue()));
                     }
                 }
@@ -84,10 +85,11 @@ public class AlanBIThingClient extends ConnectedThingClient {
         while (!client.isShutdown()) {
             // Only process the Virtual Things if the client is connected
             if (client.isConnected()) {
+            
                 // Loop over all the Virtual Things and process them
                 for (VirtualThing thing : client.getThings().values()) {
                     try {
-                        thing.processScanRequest();
+                    	steamSensorThing.updateStatus("Hello World!!!!!");
                     } catch (Exception eProcessing) {
                         System.out.println("Error Processing Scan Request for [" + thing.getName() + "] : " + eProcessing.getMessage());
                     }
