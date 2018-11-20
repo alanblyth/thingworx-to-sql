@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import com.thingworx.communications.client.ClientConfigurator;
 
-public class BIThingClientTest {
+public class AlanBIThingClientTest {
 	
 	@Before
 	public void setup() {
@@ -18,10 +18,9 @@ public class BIThingClientTest {
 	@Test
 	public void test() throws Exception {
 		ClientConfigurator config = new ClientConfigurator();
-		BIThingClient client = new BIThingClient(config);
+		AlanBIThingClient client = new AlanBIThingClient(config);
 		
 		String[] args = null;
 		client.main(args);
 	}
-
 }

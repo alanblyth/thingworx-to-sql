@@ -1,6 +1,5 @@
 package elekta.thingworx_to_sql;
 
-import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 
 import com.thingworx.communications.client.ConnectedThingClient;
@@ -23,13 +22,22 @@ import com.thingworx.types.primitives.StringPrimitive;
 // Refer to the "Steam Sensor Example" section of the documentation
 // for a detailed explanation of this example's operation
 
-//Property Definitions
+// Property Definitions
 @SuppressWarnings("serial")
 @ThingworxPropertyDefinitions(properties = {
-     @ThingworxPropertyDefinition(name = "TestInteger", description = "Test Integer",
-             baseType = "INTEGER", category = "Status", aspects = { "isReadOnly:true" }),
-		})
-
+        @ThingworxPropertyDefinition(name = "Temperature", description = "Current Temperature",
+                baseType = "NUMBER", category = "Status", aspects = { "isReadOnly:true" }),
+        @ThingworxPropertyDefinition(name = "Pressure", description = "Current Pressure",
+                baseType = "NUMBER", category = "Status", aspects = { "isReadOnly:true" }),
+        @ThingworxPropertyDefinition(name = "FaultStatus", description = "Fault status",
+                baseType = "BOOLEAN", category = "Faults", aspects = { "isReadOnly:true" }),
+        @ThingworxPropertyDefinition(name = "InletValve", description = "Inlet valve state",
+                baseType = "BOOLEAN", category = "Status", aspects = { "isReadOnly:true" }),
+        @ThingworxPropertyDefinition(name = "TemperatureLimit",
+                description = "Temperature fault limit", baseType = "NUMBER", category = "Faults",
+                aspects = { "isReadOnly:false" }),
+        @ThingworxPropertyDefinition(name = "TotalFlow", description = "Total flow",
+                baseType = "NUMBER", category = "Aggregates", aspects = { "isReadOnly:true" }), })
 
 // Event Definitions
 @ThingworxEventDefinitions(events = { @ThingworxEventDefinition(name = "SteamSensorFault",
@@ -37,7 +45,7 @@ import com.thingworx.types.primitives.StringPrimitive;
         isInvocable = true, isPropertyEvent = false) })
 
 // Steam Thing virtual thing class that simulates a Steam Sensor
-public class BIThing extends VirtualThing implements Runnable {
+public class AlanBIThing extends VirtualThing implements Runnable {
 
     private double _totalFlow = 0.0;
     private Thread _shutdownThread = null;
@@ -52,9 +60,8 @@ public class BIThing extends VirtualThing implements Runnable {
     private final static String TEMPERATURE_LIMIT_FIELD = "RatedTemperatureLimit";
     private final static String TOTAL_FLOW_FIELD = "TotalFlowAmount";
 
-    private static Logger log = Logger.getLogger(BIThing.class);
 
-    public BIThing(String name, String description, String identifier,
+    public AlanBIThing(String name, String description, String identifier,
             ConnectedThingClient client) throws Exception {
         super(name, description, identifier, client);
 
@@ -189,9 +196,7 @@ public class BIThing extends VirtualThing implements Runnable {
         if ((counter % 1) == 0) {
             // Set the Temperature property value in the range of 400-440
             double temperature = 400 + 40 * Math.random();
-            log.info("Setting Temperature...");
             super.setProperty("Temperature", temperature);
-            log.info("Set Temperature to " + temperature + "!");
 
             // Get the TemperatureLimmit property value from memory
             double temperatureLimit =

@@ -9,16 +9,21 @@ import com.thingworx.communications.common.SecurityClaims;
 
 // Refer to the "Steam Sensor Example" section of the documentation
 // for a detailed explanation of this example's operation
-public class BIThingClient extends ConnectedThingClient {
-    private static final String THING_NAME = "BIThing";
-
-	public BIThingClient(ClientConfigurator config) throws Exception {
+public class AlanBIThingClient extends ConnectedThingClient {
+    public AlanBIThingClient(ClientConfigurator config) throws Exception {
         super(config);
     }
 
     // Test example
     public static void main(String[] args) throws Exception {
-
+//        if (args.length < 3) {
+//            System.out.println("Required arguments not found!");
+//            System.out.println("URI AppKey ScanRate <StartSensor> <Number Of Sensors>");
+//            System.out.println("Example:");
+//            System.out.println("ws://localhost:80/Thingworx/WS xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx 1000 1 10");
+//            return;
+//        }
+        
         // Set the required configuration information
         ClientConfigurator config = new ClientConfigurator();
         // The uri for connecting to Thingworx
@@ -32,7 +37,7 @@ public class BIThingClient extends ConnectedThingClient {
         config.setSecurityClaims(claims);
 
         // Set the name of the client
-        config.setName("BIThingClient");
+        config.setName("AlanBIThingGateway");
         // This client is a SDK
         config.setAsSDKType();
 
@@ -43,12 +48,22 @@ public class BIThingClient extends ConnectedThingClient {
         // Get the scan rate (milliseconds) that is specific to this example
         // The example will execute the processScanRequest of the VirtualThing
         // based on this scan rate
+        int scanRate = 15000;
+
+        int startSensor = 0;
+        int nSensors = 2;
+
+        if (args.length == 5) {
+            startSensor = Integer.parseInt(args[3]);
+            nSensors = Integer.parseInt(args[4]);
+        }
 
         // Create the client passing in the configuration from above
-        BIThingClient client = new BIThingClient(config);
+        AlanBIThingClient client = new AlanBIThingClient(config);
 
-            int sensorID = 1;
-            final BIThing steamSensorThing = new BIThing(THING_NAME, "Steam Sensor #" + sensorID, "SN000" + sensorID, client);
+        for (int sensor = 0; sensor < nSensors; sensor++) {
+            int sensorID = startSensor + sensor;
+            final AlanBIThing steamSensorThing = new AlanBIThing("AlanBIThing01", "Description", "AlanBIThing01", client);
             client.bindThing(steamSensorThing);
 
             steamSensorThing.addPropertyChangeListener(new VirtualThingPropertyChangeListener() {
@@ -60,7 +75,7 @@ public class BIThingClient extends ConnectedThingClient {
                     }
                 }
             });
-
+        }
 
         try {
             // Start the client
@@ -83,7 +98,7 @@ public class BIThingClient extends ConnectedThingClient {
                 }
             }
             // Suspend processing at the scan rate interval
-            Thread.sleep(1000);
+            Thread.sleep(scanRate);
         }
     }
 }
