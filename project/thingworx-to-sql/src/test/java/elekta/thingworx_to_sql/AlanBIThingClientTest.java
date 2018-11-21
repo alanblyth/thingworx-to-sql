@@ -8,6 +8,8 @@ import org.junit.Test;
 
 import com.thingworx.communications.client.ClientConfigurator;
 
+import elekta.thingworx_to_sql.bithing.AlanBIThingClient;
+
 public class AlanBIThingClientTest {
 	
 	@Before

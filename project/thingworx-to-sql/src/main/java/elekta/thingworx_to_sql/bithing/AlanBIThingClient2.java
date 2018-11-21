@@ -1,4 +1,6 @@
-package elekta.thingworx_to_sql;
+package elekta.thingworx_to_sql.bithing;
+
+import org.apache.log4j.Logger;
 
 import com.thingworx.communications.client.ClientConfigurator;
 import com.thingworx.communications.client.ConnectedThingClient;
@@ -10,6 +12,9 @@ import com.thingworx.communications.common.SecurityClaims;
 // Refer to the "Steam Sensor Example" section of the documentation
 // for a detailed explanation of this example's operation
 public class AlanBIThingClient2 extends ConnectedThingClient {
+	
+    static Logger log = Logger.getLogger(AlanBIThingClient2.class);
+
     public AlanBIThingClient2(ClientConfigurator config) throws Exception {
         super(config);
     }
@@ -86,17 +91,18 @@ public class AlanBIThingClient2 extends ConnectedThingClient {
             // Only process the Virtual Things if the client is connected
             if (client.isConnected()) {
             
-                // Loop over all the Virtual Things and process them
-                for (VirtualThing thing : client.getThings().values()) {
-                    try {
-                    	steamSensorThing.updateStatus("Hello World!!!!!");
-                    } catch (Exception eProcessing) {
-                        System.out.println("Error Processing Scan Request for [" + thing.getName() + "] : " + eProcessing.getMessage());
-                    }
+                try {
+                	steamSensorThing.updateStatus(status);
+                	break;
+                } catch (Exception eProcessing) {
+                    System.out.println("Error Processing Scan Request for [" + steamSensorThing.getName() + "] : " + eProcessing.getMessage());
                 }
             }
             // Suspend processing at the scan rate interval
-            Thread.sleep(scanRate);
+            else {
+            	Thread.sleep(2000);
+            }
         }
+        log.info("Work Done!");
     }
 }

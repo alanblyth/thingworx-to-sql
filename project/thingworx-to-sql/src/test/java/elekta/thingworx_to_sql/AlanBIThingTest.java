@@ -12,6 +12,9 @@ import com.thingworx.communications.client.things.VirtualThingPropertyChangeEven
 import com.thingworx.communications.client.things.VirtualThingPropertyChangeListener;
 import com.thingworx.communications.common.SecurityClaims;
 
+import elekta.thingworx_to_sql.bithing.AlanBIThing;
+import elekta.thingworx_to_sql.bithing.AlanBIThingClient;
+
 public class AlanBIThingTest {
 
 	@Before

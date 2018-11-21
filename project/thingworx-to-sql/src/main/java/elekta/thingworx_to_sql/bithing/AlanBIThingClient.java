@@ -1,4 +1,4 @@
-package elekta.thingworx_to_sql;
+package elekta.thingworx_to_sql.bithing;
 
 import com.thingworx.communications.client.ClientConfigurator;
 import com.thingworx.communications.client.ConnectedThingClient;

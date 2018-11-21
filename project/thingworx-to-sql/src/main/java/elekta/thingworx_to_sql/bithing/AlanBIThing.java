@@ -1,4 +1,4 @@
-package elekta.thingworx_to_sql;
+package elekta.thingworx_to_sql.bithing;
 
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
@@ -66,7 +66,7 @@ public class AlanBIThing extends VirtualThing implements Runnable {
     private final static String TEMPERATURE_LIMIT_FIELD = "RatedTemperatureLimit";
     private final static String TOTAL_FLOW_FIELD = "TotalFlowAmount";
 
-    Logger log = Logger.getLogger(AlanBIThing.class);
+    static Logger log = Logger.getLogger(AlanBIThing.class);
     
     public AlanBIThing(String name, String description, String identifier,
             ConnectedThingClient client) throws Exception {
@@ -211,6 +211,7 @@ public class AlanBIThing extends VirtualThing implements Runnable {
     
   public void updateStatusProperty(String status) throws Exception {
     	
+	  log.info("Setting Property " + STATUS_PROPERTY + " to " + status);
     	super.setProperty(STATUS_PROPERTY, status);
         ++counter;
 
@@ -288,6 +289,7 @@ public class AlanBIThing extends VirtualThing implements Runnable {
         // Update the subscribed properties and events to send any updates to Thingworx
         // Without calling these methods, the property and event updates will not be sent
         // The numbers are timeouts in milliseconds.
+        log.info("Updating Subscribed Properties and events");
         super.updateSubscribedProperties(15000);
         super.updateSubscribedEvents(60000);
     }
