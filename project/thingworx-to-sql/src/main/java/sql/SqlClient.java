@@ -12,12 +12,13 @@ public class SqlClient {
 
 	   // JDBC driver name and database URL
 	   static final String JDBC_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";  
-	   private String dbUrl;
-
+	   static String MASTER_DB = "Master";
+	   
 	   //  Database credentials
+	   private String dbUrl;
 	   private String username;
 	   private String password;
-	   
+	   	   
 	   Connection conn = null;
 
 	   
@@ -60,11 +61,45 @@ public class SqlClient {
 	   public void dropDatabase(String databaseName) throws ClassNotFoundException, SQLException {
 
 		   //STEP 4: Execute a query
+		   if (conn.getCatalog().equals(databaseName)) {
+			   
+			   setDatabase(MASTER_DB);
+		   }
+		   
 		   log.info("Dropping database...");
 		   Statement stmt = conn.createStatement();
 		   String sql = "DROP DATABASE " + databaseName;
 		   stmt.executeUpdate(sql);
 		   log.info("Database dropped successfully...");
+	   }
+	   
+	   public void setDatabase(String database) throws SQLException  {
+		   
+		   conn.setCatalog(database);
+	   }
+	   
+	   public String getCurrentDatabase() throws SQLException {
+		   
+		   return conn.getCatalog();
+	   }
+	   
+	   public void createTable(TableDefinition table) throws Exception {
+		   
+	         Statement stmt = conn.createStatement();
+
+	         String sql = table.getCreateTableStatement();
+	         log.debug("SQL STATEMENT: " + sql);
+	         stmt.executeUpdate(sql);
+	         log.info("Table created successfully...");
+	   }
+	   
+	   public void dropTable(String table) throws SQLException {
+		   
+	         Statement stmt = conn.createStatement();
+
+	         String sql = "DROP TABLE " + table;
+	         stmt.executeUpdate(sql);
+	         log.info("Table dropped successfully...");
 	   }
 	   
 	   public void example2() {
